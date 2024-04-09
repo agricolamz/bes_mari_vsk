@@ -1,0 +1,29 @@
+---
+title: "Listen to Besermyan and Mari vsk"
+format: html
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE, message=FALSE}
+library(tidyverse)
+read_csv("last_fix.csv") |> 
+  mutate(link = ifelse(corpus == "russian_l2_besermyan", 
+                       "http://lingconlab.ru/BesermanRus/OUT/",
+                       "http://lingconlab.ru/MariRus/OUT/"),
+         audio = str_remove(source, ".eaf"),
+         audio = str_c(audio, "-", round(as.double(time_start)*1000)),
+         audio = str_c(audio, "-", round(as.double(time_end)*1000)),
+         audio = str_c(link, audio, ".wav")) |> 
+  mutate(id = 1:n()) |> 
+  select(id, sentence, audio) ->
+df
+
+writexl::write_xlsx(df, "fill_me.xlsx")
+
+df |>   
+  mutate(audio = str_glue('<audio controls="" preload="none"><source src="{audio}" type="audio/ogg"></audio> ')) |> 
+  arrange(id) |> 
+  DT::datatable(escape = FALSE, rownames = FALSE)
+```
